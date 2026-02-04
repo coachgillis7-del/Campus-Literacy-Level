@@ -1,25 +1,59 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Campus Literacy Lead AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script type="importmap">
-{
-  "imports": {
-    "recharts": "https://esm.sh/recharts@^3.7.0",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.39.0"
-  }
-}
-</script>
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@0.2.1"
+      }
+    }
+    </script>
 </head>
-  <body class="bg-gray-50 min-h-screen">
-    <div id="root"></div>
-  </body>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
+        <h1 class="text-3xl font-bold text-blue-800 mb-4">Literacy Intervention Planner</h1>
+        <p class="mb-6 text-gray-600">Paste your student data below to generate groups and 15-minute lesson plans.</p>
+
+        <textarea id="dataInput" class="w-full h-40 p-4 border rounded-lg mb-4" placeholder="Paste mCLASS data here..."></textarea>
+        
+        <button id="generateBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+            Generate Plans
+        </button>
+
+        <div id="output" class="mt-8 prose max-w-none"></div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/genai";
+
+        // For Vercel/Local Testing: 
+        // In a real app, we'd use a backend, but for your campus prototype,
+        // we will fetch the key or you can temporarily paste it here to test.
+        const API_KEY = "YOUR_PASTED_API_KEY_HERE"; 
+
+        const genAI = new GoogleGenerativeAI(API_KEY);
+
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const input = document.getElementById('dataInput').value;
+            const outputDiv = document.getElementById('output');
+            
+            outputDiv.innerHTML = "Analysing data and generating plans...";
+
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const prompt = `Analyze this 1st grade literacy data and create 4 intervention groups with 15-minute lesson plans: ${input}`;
+
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                outputDiv.innerHTML = response.text().replace(/\n/g, '<br>');
+            } catch (error) {
+                outputDiv.innerHTML = "Error: " + error.message;
+            }
+        });
+    </script>
+</body>
 </html>
