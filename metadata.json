@@ -1,0 +1,7 @@
+{
+  "name": "Campus Literacy Lead AI",
+  "description": "A specialized MTSS and DIBELS 8th Edition data analysis tool for 1st-grade teachers to drive students toward end-of-year literacy benchmarks.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
