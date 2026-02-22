@@ -31,6 +31,8 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
       { 
         id: Math.random().toString(36).substr(2, 9), 
         name: '', 
+        composite: null,
+        lnf: null,
         psf: null, 
         nwfCls: null, 
         nwfWrc: null, 
@@ -89,6 +91,8 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
         const newStudents: StudentRecord[] = roster.map(r => ({
           id: Math.random().toString(36).substr(2, 9),
           name: r.name || 'Unknown',
+          composite: r.composite ?? null,
+          lnf: r.lnf ?? null,
           psf: r.psf ?? null,
           nwfCls: r.nwfCls ?? null,
           nwfWrc: r.nwfWrc ?? null,
@@ -99,11 +103,8 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
           formativeAssessments: []
         }));
 
-        if (confirm(`AI extracted ${newStudents.length} students. Would you like to REPLACE your current class list or ADD to it? (Click OK to REPLACE, Cancel to ADD)`)) {
-          setEditingData(newStudents);
-        } else {
-          setEditingData([...editingData, ...newStudents]);
-        }
+        setEditingData(newStudents);
+        alert(`Successfully extracted data for ${newStudents.length} students.`);
       }
     } catch (err) {
       console.error(err);
@@ -144,6 +145,8 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Student Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Comp</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">LNF</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">PSF</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">CLS</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">ORF</th>
@@ -161,6 +164,22 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
                         onChange={(e) => handleValueChange(idx, 'name', e.target.value)}
                         className="w-full border-transparent border hover:border-gray-200 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                         placeholder="e.g. John D."
+                      />
+                    </td>
+                    <td className="px-4 py-2">
+                      <input 
+                        type="number" 
+                        value={student.composite ?? ''}
+                        onChange={(e) => handleValueChange(idx, 'composite', e.target.value)}
+                        className="w-12 border-gray-100 border rounded px-1 py-1 text-sm text-center"
+                      />
+                    </td>
+                    <td className="px-4 py-2">
+                      <input 
+                        type="number" 
+                        value={student.lnf ?? ''}
+                        onChange={(e) => handleValueChange(idx, 'lnf', e.target.value)}
+                        className="w-12 border-gray-100 border rounded px-1 py-1 text-sm text-center"
                       />
                     </td>
                     <td className="px-4 py-2">

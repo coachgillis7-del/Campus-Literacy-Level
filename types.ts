@@ -25,6 +25,8 @@ export interface FormativeAssessment {
 export interface StudentRecord {
   id: string;
   name: string;
+  composite: number | null;
+  lnf: number | null;
   psf: number | null;
   nwfCls: number | null;
   nwfWrc: number | null;

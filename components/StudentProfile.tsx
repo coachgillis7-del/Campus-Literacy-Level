@@ -2,6 +2,7 @@
 import React from 'react';
 import { StudentRecord, FormativeAssessment } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BENCHMARKS } from '../constants';
 
 interface StudentProfileProps {
   student: StudentRecord;
@@ -36,18 +37,23 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ student, onClose }) => 
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
           {/* Benchmarks Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
             {[
-              { label: 'PSF', val: student?.psf, goal: 58 },
-              { label: 'NWF-CLS', val: student?.nwfCls, goal: 62 },
-              { label: 'NWF-WRC', val: student?.nwfWrc, goal: 20 },
-              { label: 'WRF', val: student?.wrf, goal: 27 },
-              { label: 'ORF', val: student?.orf, goal: 47 }
+              { label: 'Comp', val: student?.composite, goal: BENCHMARKS.COMPOSITE },
+              { label: 'LNF', val: student?.lnf, goal: BENCHMARKS.LNF },
+              { label: 'PSF', val: student?.psf, goal: BENCHMARKS.PSF },
+              { label: 'NWF-CLS', val: student?.nwfCls, goal: BENCHMARKS.NWF_CLS },
+              { label: 'NWF-WRC', val: student?.nwfWrc, goal: BENCHMARKS.NWF_WRC },
+              { label: 'WRF', val: student?.wrf, goal: BENCHMARKS.WRF },
+              { label: 'ORF', val: student?.orf, goal: BENCHMARKS.ORF },
+              { label: 'Accu', val: student?.orfAccuracy, goal: BENCHMARKS.ORF_ACC, unit: '%' }
             ].map(b => (
-              <div key={b.label} className="p-3 rounded-lg border bg-white flex flex-col items-center">
-                <span className="text-[10px] font-bold text-gray-400 uppercase">{b.label}</span>
-                <span className={`text-xl font-bold ${Number(b.val) >= b.goal ? 'text-green-600' : 'text-red-500'}`}>{b.val ?? '-'}</span>
-                <span className="text-[10px] text-gray-400">Goal: {b.goal}</span>
+              <div key={b.label} className="p-2 rounded-lg border bg-white flex flex-col items-center">
+                <span className="text-[9px] font-bold text-gray-400 uppercase">{b.label}</span>
+                <span className={`text-lg font-bold ${Number(b.val) >= b.goal ? 'text-green-600' : 'text-red-500'}`}>
+                  {b.val ?? '-'}{b.unit && b.val !== null ? b.unit : ''}
+                </span>
+                <span className="text-[9px] text-gray-400">Goal: {b.goal}{b.unit}</span>
               </div>
             ))}
           </div>
