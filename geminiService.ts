@@ -41,7 +41,7 @@ export const analyzeLiteracyData = async (students: StudentRecord[]): Promise<Li
   `;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview',
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
@@ -187,7 +187,7 @@ export const parseRosterFromMedia = async (base64Data: string, mimeType: string)
   `;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3.1-pro-preview',
+    model: 'gemini-3-flash-preview',
     contents: {
       parts: [
         { inlineData: { data: base64Data, mimeType } },

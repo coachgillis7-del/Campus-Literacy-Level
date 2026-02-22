@@ -19,6 +19,15 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'guide'>('dashboard');
   const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
 
+  const handleSelectKey = async () => {
+    try {
+      // @ts-ignore - window.aistudio is injected by the platform
+      await window.aistudio.openSelectKey();
+    } catch (error) {
+      console.error("Error opening key selector:", error);
+    }
+  };
+
   const handleAnalyze = async (data: StudentRecord[]) => {
     setIsLoading(true);
     try {
@@ -48,8 +57,18 @@ const App: React.FC = () => {
               <p className="text-xs text-blue-100 uppercase tracking-widest font-semibold">1st Grade MTSS & DIBELS 8th</p>
             </div>
           </div>
-          <div className="text-sm font-medium bg-blue-800 px-3 py-1 rounded-full border border-blue-500 hidden sm:block">
-            MTSS Tier 1-3 Support
+          <div className="flex items-center space-x-3">
+            <div className="text-sm font-medium bg-blue-800 px-3 py-1 rounded-full border border-blue-500 hidden sm:block">
+              MTSS Tier 1-3 Support
+            </div>
+            <button 
+              onClick={handleSelectKey}
+              className="text-xs font-bold bg-white text-blue-700 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors flex items-center space-x-1"
+              title="Use your own Gemini API key to avoid rate limits"
+            >
+              <i className="fas fa-key"></i>
+              <span>API Key</span>
+            </button>
           </div>
         </div>
       </header>
