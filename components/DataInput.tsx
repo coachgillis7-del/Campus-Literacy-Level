@@ -6,11 +6,12 @@ import { extractFormativeData, parseRosterFromMedia } from '../geminiService';
 
 interface DataInputProps {
   students: StudentRecord[];
+  isLoading: boolean;
   onUpdate: (data: StudentRecord[]) => void;
   onViewProfile: (student: StudentRecord) => void;
 }
 
-const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile }) => {
+const DataInput: React.FC<DataInputProps> = ({ students, isLoading, onUpdate, onViewProfile }) => {
   const [editingData, setEditingData] = useState<StudentRecord[]>(students);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [uploadType, setUploadType] = useState<'sample' | 'roster'>('sample');
@@ -79,12 +80,13 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
           newData.push({
             id: Math.random().toString(36).substr(2, 9),
             name: result.studentName,
-            psf: null, nwfCls: null, nwfWrc: null, wrf: null, orf: null, orfAccuracy: null,
+            composite: null, lnf: null, psf: null, nwfCls: null, nwfWrc: null, wrf: null, orf: null, orfAccuracy: null,
             metAimLineWeeks: 0,
             formativeAssessments: [newAssessment]
           });
         }
         setEditingData(newData);
+        onUpdate(newData); // Auto-analyze after adding formative sample
       } else {
         // ROSTER IMPORT
         const roster = await parseRosterFromMedia(base64, type);
@@ -104,7 +106,7 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
         }));
 
         setEditingData(newStudents);
-        alert(`Successfully extracted data for ${newStudents.length} students.`);
+        onUpdate(newStudents); // Auto-analyze after roster import
       }
     } catch (err) {
       console.error(err);
@@ -126,16 +128,25 @@ const DataInput: React.FC<DataInputProps> = ({ students, onUpdate, onViewProfile
             <div className="flex space-x-2">
               <button 
                 onClick={addStudent}
-                className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center space-x-2"
+                disabled={isLoading}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center space-x-2 disabled:opacity-50"
               >
                 <i className="fas fa-plus"></i>
                 <span className="hidden sm:inline">Add Student</span>
               </button>
               <button 
                 onClick={() => onUpdate(editingData)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg shadow-blue-200"
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg shadow-blue-200 flex items-center space-x-2 disabled:opacity-70"
               >
-                Run Analysis
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Analyzing...</span>
+                  </>
+                ) : (
+                  <span>Run Analysis</span>
+                )}
               </button>
             </div>
           </div>

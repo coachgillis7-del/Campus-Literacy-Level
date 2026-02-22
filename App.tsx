@@ -10,6 +10,8 @@ import InterventionGuide from './components/InterventionGuide';
 import StudentProfile from './components/StudentProfile';
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<{ name: string; email: string; picture: string } | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   // Initialize students with empty formative array to satisfy new type
   const [students, setStudents] = useState<StudentRecord[]>(
     INITIAL_STUDENTS.map(s => ({ ...s, formativeAssessments: [] }))
@@ -18,6 +20,51 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'guide'>('dashboard');
   const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
+
+  const fetchUser = async () => {
+    try {
+      const res = await fetch('/api/me');
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setIsAuthChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        fetchUser();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      const res = await fetch('/api/auth/url');
+      const { url } = await res.json();
+      window.open(url, 'google_oauth', 'width=500,height=600');
+    } catch (err) {
+      console.error("Login Error:", err);
+    }
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    setUser(null);
+  };
 
   const handleSelectKey = async () => {
     try {
@@ -33,6 +80,7 @@ const App: React.FC = () => {
     try {
       const report = await analyzeLiteracyData(data);
       setAnalysis(report);
+      setActiveTab('dashboard');
     } catch (error) {
       console.error("Error analyzing data:", error);
       alert("Analysis failed. Please check your data and try again.");
@@ -42,8 +90,44 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    handleAnalyze(students);
-  }, []);
+    if (user) {
+      handleAnalyze(students);
+    }
+  }, [user]);
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center space-y-6">
+          <div className="h-20 w-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto text-blue-600">
+            <i className="fas fa-graduation-cap text-4xl"></i>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Campus Literacy Lead AI</h1>
+            <p className="text-gray-500 mt-2">Secure Teacher Login Required</p>
+          </div>
+          <button 
+            onClick={handleLogin}
+            className="w-full bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-xl font-bold flex items-center justify-center space-x-3 hover:bg-gray-50 transition-all shadow-sm"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+            <span>Sign in with Google</span>
+          </button>
+          <p className="text-xs text-gray-400">
+            Access restricted to verified campus educators.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,9 +141,13 @@ const App: React.FC = () => {
               <p className="text-xs text-blue-100 uppercase tracking-widest font-semibold">1st Grade MTSS & DIBELS 8th</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="text-sm font-medium bg-blue-800 px-3 py-1 rounded-full border border-blue-500 hidden sm:block">
-              MTSS Tier 1-3 Support
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 bg-blue-800 px-3 py-1 rounded-full border border-blue-500">
+              <img src={user.picture} className="h-6 w-6 rounded-full" alt={user.name} />
+              <span className="text-sm font-medium hidden sm:inline">{user.name}</span>
+              <button onClick={handleLogout} className="text-blue-300 hover:text-white transition-colors ml-2">
+                <i className="fas fa-sign-out-alt"></i>
+              </button>
             </div>
             <button 
               onClick={handleSelectKey}
@@ -118,6 +206,7 @@ const App: React.FC = () => {
             {activeTab === 'input' && (
               <DataInput 
                 students={students} 
+                isLoading={isLoading}
                 onUpdate={(newStudents) => {
                   setStudents(newStudents);
                   handleAnalyze(newStudents);
